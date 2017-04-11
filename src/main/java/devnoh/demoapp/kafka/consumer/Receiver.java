@@ -1,20 +1,18 @@
 package devnoh.demoapp.kafka.consumer;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
 
 import java.util.concurrent.CountDownLatch;
 
+@Slf4j
 public class Receiver {
-
-    private static final Logger logger = LoggerFactory.getLogger(Receiver.class);
 
     private CountDownLatch latch = new CountDownLatch(1);
 
-    @KafkaListener(topics = "helloworld.t")
-    public void receiveMessage(String message) {
-        logger.info("received message='{}'", message);
+    @KafkaListener(topics = "${kafka.topic.helloworld}")
+    public void receive(String message) {
+        log.debug("received message='{}'", message);
         latch.countDown();
     }
 
