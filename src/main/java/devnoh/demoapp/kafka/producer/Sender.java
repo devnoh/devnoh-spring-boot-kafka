@@ -21,7 +21,7 @@ public class Sender {
         future.addCallback(new ListenableFutureCallback<SendResult<String, String>>() {
             @Override
             public void onSuccess(SendResult<String, String> result) {
-                log.debug("sent message='{}' with offset={}", message, result.getRecordMetadata().offset());
+                log.info("sent message='{}' with offset={}", message, result.getRecordMetadata().offset());
             }
 
             @Override
