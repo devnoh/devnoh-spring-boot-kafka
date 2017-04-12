@@ -1,10 +1,9 @@
 package devnoh.demoapp.producer;
 
+import devnoh.demoapp.AllKafkaTests;
 import devnoh.demoapp.kafka.producer.Sender;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,7 +12,6 @@ import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.listener.KafkaMessageListenerContainer;
 import org.springframework.kafka.listener.MessageListener;
 import org.springframework.kafka.listener.config.ContainerProperties;
-import org.springframework.kafka.test.rule.KafkaEmbedded;
 import org.springframework.kafka.test.utils.ContainerTestUtils;
 import org.springframework.kafka.test.utils.KafkaTestUtils;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -31,10 +29,11 @@ import static org.springframework.kafka.test.assertj.KafkaConditions.value;
 @Slf4j
 public class SenderTest {
 
-    protected static final String SENDER_TOPIC = "sender.t";
-
     @Autowired
-    private Sender sender;
+    Sender sender;
+
+    /*
+    public static final String SENDER_TOPIC = "sender.t";
 
     @ClassRule
     public static KafkaEmbedded embeddedKafka = new KafkaEmbedded(1, true, SENDER_TOPIC);
@@ -46,18 +45,20 @@ public class SenderTest {
         // override the property in application.properties
         System.setProperty("kafka.bootstrap.servers", kafkaBootstrapServers);
     }
+    */
 
     @Test
     public void testSend() throws Exception {
+
         // set up the Kafka consumer properties
         Map<String, Object> consumerProperties =
-                KafkaTestUtils.consumerProps("sender_group", "false", embeddedKafka);
+                KafkaTestUtils.consumerProps("sender_group", "false", AllKafkaTests.embeddedKafka);
 
         // create a Kafka consumer factory
         DefaultKafkaConsumerFactory<String, String> consumerFactory =
-                new DefaultKafkaConsumerFactory<String, String>(consumerProperties);
+                new DefaultKafkaConsumerFactory<>(consumerProperties);
         // set the topic that needs to be consumed
-        ContainerProperties containerProperties = new ContainerProperties(SENDER_TOPIC);
+        ContainerProperties containerProperties = new ContainerProperties(AllKafkaTests.SENDER_TOPIC);
 
         // create a Kafka MessageListenerContainer
         KafkaMessageListenerContainer<String, String> container =
@@ -77,15 +78,16 @@ public class SenderTest {
         // start the container and underlying message listener
         container.start();
         // wait until the container has the required number of assigned partitions
-        ContainerTestUtils.waitForAssignment(container, embeddedKafka.getPartitionsPerTopic());
+        ContainerTestUtils.waitForAssignment(container, AllKafkaTests.embeddedKafka.getPartitionsPerTopic());
 
         // send the message
         String greeting = "Hello Spring Kafka Sender!";
-        sender.sendMessage(SENDER_TOPIC, greeting);
+        sender.send(AllKafkaTests.SENDER_TOPIC, greeting);
         // check that the message was received
         assertThat(records.poll(10, TimeUnit.SECONDS)).has(value(greeting));
 
         // stop the container
         container.stop();
     }
+
 }
